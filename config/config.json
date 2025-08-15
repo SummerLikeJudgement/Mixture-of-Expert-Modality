@@ -3,7 +3,7 @@
     "dataset_root_dir": "./dataset",
     "mosi": {
       "aligned": {
-        "featurePath": "MOSI/Processed/aligned_50.pkl",
+        "featurePath": "MOSI/aligned_50.pkl",
         "feature_dims": [768, 5, 20],
         "train_samples": 1284,
         "num_classes": 3,
@@ -11,7 +11,7 @@
         "KeyEval": "Loss"
       },
       "unaligned": {
-        "featurePath": "MOSI/Processed/unaligned_50.pkl",
+        "featurePath": "MOSI/unaligned_50.pkl",
         "feature_dims": [768, 5, 20],
         "train_samples": 1284,
         "num_classes": 3,
@@ -21,7 +21,7 @@
     },
     "mosei": {
       "aligned": {
-        "featurePath": "MOSEI/Processed/aligned_50.pkl",
+        "featurePath": "MOSEI/aligned_50.pkl",
         "feature_dims": [768, 74, 35],
         "train_samples": 16326,
         "num_classes": 3,
@@ -29,7 +29,7 @@
         "KeyEval": "Loss"
       },
       "unaligned": {
-        "featurePath": "MOSEI/Processed/unaligned_50.pkl",
+        "featurePath": "MOSEI/unaligned_50.pkl",
         "feature_dims": [768, 74, 35],
         "train_samples": 16326,
         "num_classes": 3,
