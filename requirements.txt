@@ -17,7 +17,7 @@ kiwisolver==1.4.7
 matplotlib==3.7.5
 mkl-fft
 mkl-random
-mkl-service==2.4.0
+mkl-service==2.4.1
 numexpr
 numpy
 packaging==24.1
