@@ -98,8 +98,9 @@ def EMOE_run(
         args['cur_seed'] = i + 1
         result = _run(args, num_workers, is_tune)
         model_results.append(result)
+    # 蒸馏任务
     if args.is_distill:
-        criterions = list(model_results[0].keys())
+        criterions = list(model_results[0].keys()) # 从model_results的第一个元素（字典）中获取所有的键
         # save result to csv
         csv_file = res_save_dir / f"{dataset_name}.csv"
         if csv_file.is_file():
@@ -110,11 +111,11 @@ def EMOE_run(
         res = [model_name]
         for c in criterions:
             values = [r[c] for r in model_results]
-            mean = round(np.mean(values)*100, 2)
-            std = round(np.std(values)*100, 2)
+            mean = round(np.mean(values)*100, 2) # 计算该指标值的平均值
+            std = round(np.std(values)*100, 2) # 计算该指标值的标准差
             res.append((mean, std))
-        df.loc[len(df)] = res
-        df.to_csv(csv_file, index=None)
+        df.loc[len(df)] = res # 将res作为新行添加到DataFrame末尾
+        df.to_csv(csv_file, index=None) # 保存csv文件
         logger.info(f"Results saved to {csv_file}.")
 
 def _run(args, num_workers=4, is_tune=False, from_sena=False):
@@ -142,7 +143,7 @@ def _run(args, num_workers=4, is_tune=False, from_sena=False):
 
     # 测试
     if args.mode == 'test':
-        model.load_state_dict(torch.load('pt/mosi-aligned.pth'))
+        model.load_state_dict(torch.load('pt/mosi-aligned.pth')) # 加载预训练模型
         results = trainer.do_test(model, dataloader['test'], mode="TEST")
         sys.stdout.flush()
         input('[Press Any Key to start another run]')
@@ -153,6 +154,7 @@ def _run(args, num_workers=4, is_tune=False, from_sena=False):
 
         results = trainer.do_test(model, dataloader['test'], mode="TEST", f=1)
 
+        # 清理内存
         del model
         torch.cuda.empty_cache()
         gc.collect()
