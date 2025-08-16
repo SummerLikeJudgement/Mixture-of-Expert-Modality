@@ -204,5 +204,6 @@ __marimo__/
 
 dataset/
 log/
-results/
+result/
 pt/
+bert-base-uncased/
