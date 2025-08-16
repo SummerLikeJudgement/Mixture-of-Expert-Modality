@@ -20,6 +20,7 @@ def get_config_regression(model_name, dataset_name, config_file=""):
         config_file = Path(__file__).parent / "config" / "config_regression.json"
     with open(config_file, 'r') as f:
         config_all = json.load(f)
+    # 获取相应参数
     model_common_args = config_all[model_name]['commonParams']
     model_dataset_args = config_all[model_name]['datasetParams'][dataset_name]
     dataset_args = config_all['datasetCommonParams'][dataset_name]
