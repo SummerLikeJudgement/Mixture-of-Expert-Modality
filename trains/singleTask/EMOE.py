@@ -103,7 +103,7 @@ class EMOE():
             test_results = self.do_test(model, dataloader['test'], mode="TEST")
             cur_valid = val_results[self.args.KeyEval]
             scheduler.step(val_results['Loss'])
-            torch.save(model.state_dict(), './pt/' + str(epochs) + '.pth')
+            # torch.save(model.state_dict(), './pt/' + str(epochs) + '.pth') # 不需要每个epoch都保存参数
             isBetter = cur_valid <= (best_valid - 1e-6) if min_or_max == 'min' else cur_valid >= (best_valid + 1e-6)
             if isBetter:
                 best_valid, best_epoch = cur_valid, epochs
