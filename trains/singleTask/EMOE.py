@@ -31,7 +31,7 @@ class EMOE():
         min_or_max = 'min' if self.args.KeyEval in ['Loss'] else 'max'
         best_valid = 1e8 if min_or_max == 'min' else 0
 
-        while True:
+        while True: # 早停控制循环
             epochs += 1
             y_pred, y_true = [], []
             model.train()
@@ -49,9 +49,11 @@ class EMOE():
                     labels = batch_data['labels']['M'].to(self.args.device)
                     labels = labels.view(-1, 1)
 
+                    # 模型前向传播
                     output = model(text, audio, vision)
                     w = output['channel_weight']
 
+                    # 损失计算
                     y_pred.append(output['logits_c'].cpu())
                     y_true.append(labels.cpu())
 
@@ -72,16 +74,19 @@ class EMOE():
                     loss_sim = torch.mean(torch.mean((dist.detach() - w) ** 2, dim=-1))
                     loss_ety = entropy_balance(w)
 
+                    # 自蒸馏/特征蒸馏
                     if self.args.fusion_method == "sum":
-                        loss_ud = uni_distill(output['c_proj'], (output['l_proj'] * w[:,0].view(-1, 1) + output['v_proj'] * w[:,1].view(-1, 1) + 
-                        output['a_proj'] * w[:,2].view(-1, 1)).detach())
+                        loss_ud = uni_distill(output['c_proj'], # 学生-融合特征
+                                              (output['l_proj'] * w[:,0].view(-1, 1) + output['v_proj'] * w[:,1].view(-1, 1) + output['a_proj'] * w[:,2].view(-1, 1)).detach() # 教师-单模态特征
+                                              )
                     elif self.args.fusion_method == "concat":
-                        loss_ud = uni_distill(output['c_proj'], torch.cat([output['l_proj'] * w[:,0].view(-1, 1),output['v_proj'] * w[:,1].view(-1, 1),
-                        output['a_proj'] * w[:,2].view(-1, 1)], dim=1).detach())
+                        loss_ud = uni_distill(output['c_proj'],
+                                              torch.cat([output['l_proj'] * w[:,0].view(-1, 1),output['v_proj'] * w[:,1].view(-1, 1),output['a_proj'] * w[:,2].view(-1, 1)], dim=1).detach()
+                                              )
 
                     loss = loss_task_m + (loss_task_l + loss_task_v + loss_task_a)/3 + 0.1*(loss_ety + 0.1*loss_sim) + 0.1*loss_ud
 
-                    loss.backward()
+                    loss.backward() # 梯度传播到所有参数（包括单模态预测头）
                     train_loss += loss.item()
 
                     if not left_epochs:
@@ -116,6 +121,7 @@ class EMOE():
                 epoch_results['valid'].append(val_results)
                 test_results = self.do_test(model, dataloader['test'], mode="TEST")
                 epoch_results['test'].append(test_results)
+            # 早停机制：若连续early_stop轮未提升，终止训练。
             if epochs - best_epoch >= self.args.early_stop:
                 return epoch_results if return_epoch_results else None
 
@@ -136,7 +142,7 @@ class EMOE():
                 "Feature_f": [],
             }
 
-        with torch.no_grad():
+        with torch.no_grad(): # 禁用梯度计算
             with tqdm(dataloader) as td:
                 for batch_data in td:
                     vision = batch_data['vision'].to(self.args.device)
@@ -148,12 +154,12 @@ class EMOE():
 
                     loss = self.criterion(output['logits_c'], labels)
                     eval_loss += loss.item()
-                    y_pred.append(output['logits_c'].cpu())
-                    y_true.append(labels.cpu())
+                    y_pred.append(output['logits_c'].cpu()) # 预测值
+                    y_true.append(labels.cpu()) # 真实标签
                     
         eval_loss = eval_loss / len(dataloader)
         pred, true = torch.cat(y_pred), torch.cat(y_true)
-        eval_results = self.metrics(pred, true)
+        eval_results = self.metrics(pred, true) # 评估指标
         eval_results["Loss"] = round(eval_loss, 4)
         logger.info(f"{mode}-({self.args.model_name}) >> {dict_to_str(eval_results)}")
         

@@ -98,7 +98,7 @@ def EMOE_run(
         args['cur_seed'] = i + 1
         result = _run(args, num_workers, is_tune)
         model_results.append(result)
-    # 蒸馏任务
+    # 是否蒸馏任务
     if args.is_distill:
         criterions = list(model_results[0].keys()) # 从model_results的第一个元素（字典）中获取所有的键
         # save result to csv
@@ -108,12 +108,12 @@ def EMOE_run(
         else:
             df = pd.DataFrame(columns=["Model"] + criterions)
         # save results
-        res = [model_name]
+        res = [model_name] # 第一列为模型名称
         for c in criterions:
-            values = [r[c] for r in model_results]
-            mean = round(np.mean(values)*100, 2) # 计算该指标值的平均值
-            std = round(np.std(values)*100, 2) # 计算该指标值的标准差
-            res.append((mean, std))
+            values = [r[c] for r in model_results] # 提取该指标在所有实验中的值
+            mean = round(np.mean(values)*100, 2) # 该指标值的平均值
+            std = round(np.std(values)*100, 2) # 该指标值的标准差
+            res.append((mean, std)) # 格式：(均值，标准差)
         df.loc[len(df)] = res # 将res作为新行添加到DataFrame末尾
         df.to_csv(csv_file, index=None) # 保存csv文件
         logger.info(f"Results saved to {csv_file}.")

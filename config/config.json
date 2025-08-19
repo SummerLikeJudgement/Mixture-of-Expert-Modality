@@ -1,5 +1,5 @@
 {
-  "datasetCommonParams": {
+  "datasetCommonParams": { // 数据集通用参数
     "dataset_root_dir": "./dataset",
     "mosi": {
       "aligned": {
@@ -38,19 +38,20 @@
       }
     }
   },
-  "emoe": {
-    "commonParams": {
+  "emoe": { // 模型相关参数
+    "commonParams": { // emoe通用超参数
       "need_data_aligned": true,
       "need_model_aligned": true,
-      "early_stop": 10,
+      "early_stop": 10, //早停轮数
       "use_bert": true,
       "use_finetune": true,
       "attn_mask": true,
-      "update_epochs": 10,
+      "update_epochs": 10,//梯度累积步数
       "fusion_method": "sum",
-      "temperature": 0.1
+      "temperature": 0.1,
+      "is_distill": true // 开启蒸馏
     },
-    "datasetParams": {
+    "datasetParams": { // emoe针对不同数据集的参数
       "mosi": {
         "attn_dropout_a": 0.2,
         "attn_dropout_v": 0.0,
