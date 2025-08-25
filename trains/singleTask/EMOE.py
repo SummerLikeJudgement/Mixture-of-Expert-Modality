@@ -76,12 +76,12 @@ class EMOE():
 
                     # 自蒸馏/特征蒸馏
                     if self.args.fusion_method == "sum":
-                        loss_ud = uni_distill(output['c_proj'], # 学生-融合特征
+                        loss_ud = uni_distill(output['c_proj'], # 学生-多模态融合特征
                                               (output['l_proj'] * w[:,0].view(-1, 1) + output['v_proj'] * w[:,1].view(-1, 1) + output['a_proj'] * w[:,2].view(-1, 1)).detach() # 教师-单模态特征
                                               )
                     elif self.args.fusion_method == "concat":
-                        loss_ud = uni_distill(output['c_proj'],
-                                              torch.cat([output['l_proj'] * w[:,0].view(-1, 1),output['v_proj'] * w[:,1].view(-1, 1),output['a_proj'] * w[:,2].view(-1, 1)], dim=1).detach()
+                        loss_ud = uni_distill(output['c_proj'], # 学生-多模态融合特征
+                                              torch.cat([output['l_proj'] * w[:,0].view(-1, 1),output['v_proj'] * w[:,1].view(-1, 1),output['a_proj'] * w[:,2].view(-1, 1)], dim=1).detach() # 教师-单模态特征
                                               )
 
                     loss = loss_task_m + (loss_task_l + loss_task_v + loss_task_a)/3 + 0.1*(loss_ety + 0.1*loss_sim) + 0.1*loss_ud

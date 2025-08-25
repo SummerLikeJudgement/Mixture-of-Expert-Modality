@@ -86,6 +86,7 @@ def EMOE_run(
     args['feature_V'] = feature_V
     if config:
         args.update(config)
+    print(args)
 
 
     # 结果保存目录
