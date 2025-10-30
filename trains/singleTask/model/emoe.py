@@ -13,6 +13,7 @@ class EMOE(nn.Module):
                                               pretrained=args.pretrained)
         self.use_bert = args.use_bert
         dst_feature_dims, nheads = args.dst_feature_dim_nheads
+        # 各模态序列长度
         if args.dataset_name == 'mosi':
             if args.need_data_aligned:
                 self.len_l, self.len_v, self.len_a = 50, 50, 50
@@ -25,7 +26,7 @@ class EMOE(nn.Module):
                 self.len_l, self.len_v, self.len_a = 50, 500, 500
         self.aligned = args.need_data_aligned
         self.orig_d_l, self.orig_d_a, self.orig_d_v = args.feature_dims # 原始特征维度
-        self.d_l = self.d_a = self.d_v = dst_feature_dims # 所有模态目标维度相同
+        self.d_l = self.d_a = self.d_v = dst_feature_dims # 所有模态目标特征维度相同
 
         self.num_heads = nheads
         self.layers = args.nlevels
