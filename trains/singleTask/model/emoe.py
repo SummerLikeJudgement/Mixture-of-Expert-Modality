@@ -48,7 +48,7 @@ class EMOE(nn.Module):
         self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=args.conv1d_kernel_size_a, padding=0, bias=False)
         self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=args.conv1d_kernel_size_v, padding=0, bias=False)
 
-        # 创建1x1卷积编码器，用于特征变换。
+        # 创建1D卷积编码器，用于特征变换。
         self.encoder_c = nn.Conv1d(self.d_l, self.d_l, kernel_size=1, padding=0, bias=False)
         self.encoder_l = nn.Conv1d(self.d_l, self.d_l, kernel_size=1, padding=0, bias=False)
         self.encoder_v = nn.Conv1d(self.d_v, self.d_v, kernel_size=1, padding=0, bias=False)
@@ -130,17 +130,17 @@ class EMOE(nn.Module):
         # 路由网络获取权重
         m_w = self.Router(m_i)
 
-        # 如果原始维度与目标维度不同，进行投影
+        # 如果原始特征的序列维度与目标特征的序列维度不同，进行投影
         proj_x_l = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l)
         proj_x_a = x_a if self.orig_d_a == self.d_a else self.proj_a(x_a)
         proj_x_v = x_v if self.orig_d_v == self.d_v else self.proj_v(x_v)
 
-        # 使用encoder（1*1卷积）对投影后特征编码，得到低级特征
+        # 使用1卷积对投影后特征编码，得到低级特征
         c_l = self.encoder_c(proj_x_l)
         c_v = self.encoder_c(proj_x_v)
         c_a = self.encoder_c(proj_x_a)
 
-        c_l = c_l.permute(2, 0, 1)
+        c_l = c_l.permute(2, 0, 1) # (seq,batch,embedding/d_l)
         c_v = c_v.permute(2, 0, 1)
         c_a = c_a.permute(2, 0, 1)
 
@@ -148,7 +148,7 @@ class EMOE(nn.Module):
         c_l_att = self.self_attentions_l(c_l)
         if type(c_l_att) == tuple:
             c_l_att = c_l_att[0]
-        c_l_att = c_l_att[-1]
+        c_l_att = c_l_att[-1] # (seq, embedding/d_l)
         c_v_att = self.self_attentions_v(c_v)
         if type(c_v_att) == tuple:
             c_v_att = c_v_att[0]

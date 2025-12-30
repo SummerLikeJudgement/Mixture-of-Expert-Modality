@@ -43,7 +43,7 @@
       "need_data_aligned": true,
       "need_model_aligned": true,
       "early_stop": 10,
-      "use_bert": true,
+      "use_bert": false,
       "use_finetune": true,
       "attn_mask": true,
       "update_epochs": 10,

@@ -75,27 +75,33 @@ class MetricsTop():
         test_preds = y_pred.view(-1).cpu().detach().numpy()
         test_truth = y_true.view(-1).cpu().detach().numpy()
 
+        # 将值裁剪到[-3,3]范围，对应7分类
         test_preds_a7 = np.clip(test_preds, a_min=-3., a_max=3.)
         test_truth_a7 = np.clip(test_truth, a_min=-3., a_max=3.)
+        # 将值裁剪到[-2,2]范围，对应5分类
         test_preds_a5 = np.clip(test_preds, a_min=-2., a_max=2.)
         test_truth_a5 = np.clip(test_truth, a_min=-2., a_max=2.)
+        # 将值裁剪到[-1，1]范围，对应3分类
         test_preds_a3 = np.clip(test_preds, a_min=-1., a_max=1.)
         test_truth_a3 = np.clip(test_truth, a_min=-1., a_max=1.)
 
-
+        # 计算平均绝对误差
         mae = np.mean(np.absolute(test_preds - test_truth)).astype(np.float64)   # Average L1 distance between preds and truths
+        # 计算皮尔逊相关系数，[0][1]取相关系数矩阵的上三角元素
         corr = np.corrcoef(test_preds, test_truth)[0][1]
+        # 调用另一个方法计算多分类准确率（7分类、5分类、3分类）
         mult_a7 = self.__multiclass_acc(test_preds_a7, test_truth_a7)
         mult_a5 = self.__multiclass_acc(test_preds_a5, test_truth_a5)
         mult_a3 = self.__multiclass_acc(test_preds_a3, test_truth_a3)
-        
+        # 非0样本分析（排除中性情感）
         non_zeros = np.array([i for i, e in enumerate(test_truth) if e != 0])
+        # 将非0样本转换为二分类（正情感和负情感）
         non_zeros_binary_truth = (test_truth[non_zeros] > 0)
         non_zeros_binary_preds = (test_preds[non_zeros] > 0)
-
         non_zeros_acc2 = accuracy_score(non_zeros_binary_preds, non_zeros_binary_truth)
         non_zeros_f1_score = f1_score(non_zeros_binary_truth, non_zeros_binary_preds, average='weighted')
 
+        # 全样本二分类分析（非负情感和负情感）
         binary_truth = (test_truth >= 0)
         binary_preds = (test_preds >= 0)
         acc2 = accuracy_score(binary_preds, binary_truth)

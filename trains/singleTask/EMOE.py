@@ -84,8 +84,7 @@ class EMOE():
                                               torch.cat([output['l_proj'] * w[:,0].view(-1, 1),output['v_proj'] * w[:,1].view(-1, 1),output['a_proj'] * w[:,2].view(-1, 1)], dim=1).detach() # 教师-单模态特征
                                               )
 
-                    # loss = loss_task_m + (loss_task_l + loss_task_v + loss_task_a)/3 + 0.1*(loss_ety + 0.1*loss_sim) + 0.1*loss_ud
-                    loss = loss_task_m
+                    loss = loss_task_m + (loss_task_l + loss_task_v + loss_task_a)/3 + 0.1*(loss_ety + 0.1*loss_sim) + 0.1*loss_ud
                     loss.backward() # 梯度传播到所有参数（包括单模态预测头）
                     train_loss += loss.item()
 
