@@ -116,7 +116,7 @@ class EMOE(nn.Module):
             text = self.text_model(text)
 
         # 将序列长度和特征维度交换
-        x_l = F.dropout(text.transpose(1, 2), p=self.text_dropout, training=self.training)
+        x_l = F.dropout(text.transpose(1, 2), p=self.text_dropout, training=self.training)# (batch, orig_d_l, seq_len)
         x_a = audio.transpose(1, 2)
         x_v = video.transpose(1, 2)
 
@@ -131,24 +131,26 @@ class EMOE(nn.Module):
         m_w = self.Router(m_i)
 
         # 如果原始特征的序列维度与目标特征的序列维度不同，进行投影
-        proj_x_l = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l)
+        proj_x_l = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l) # (batch, d_l, seq_len)
         proj_x_a = x_a if self.orig_d_a == self.d_a else self.proj_a(x_a)
         proj_x_v = x_v if self.orig_d_v == self.d_v else self.proj_v(x_v)
 
         # 使用1卷积对投影后特征编码，得到低级特征
-        c_l = self.encoder_c(proj_x_l)
+        c_l = self.encoder_c(proj_x_l) # (batch, d_l, seq_len)
         c_v = self.encoder_c(proj_x_v)
         c_a = self.encoder_c(proj_x_a)
 
-        c_l = c_l.permute(2, 0, 1) # (seq,batch,embedding/d_l)
+        c_l = c_l.permute(2, 0, 1) # (seq_len, batch, d_l)
         c_v = c_v.permute(2, 0, 1)
         c_a = c_a.permute(2, 0, 1)
+        print(f"c_l:{c_l.shape}")
 
         # 对每个模态应用transformer，得到高级特征
-        c_l_att = self.self_attentions_l(c_l)
+        c_l_att = self.self_attentions_l(c_l) # n*(seq_len, batch, d_l)
         if type(c_l_att) == tuple:
-            c_l_att = c_l_att[0]
-        c_l_att = c_l_att[-1] # (seq, embedding/d_l)
+            c_l_att = c_l_att[0] # (seq_len, batch, d_l)
+        c_l_att = c_l_att[-1] # (seq_len, batch, d_l)
+        print(f"c_l_att:{c_l_att.shape}")
         c_v_att = self.self_attentions_v(c_v)
         if type(c_v_att) == tuple:
             c_v_att = c_v_att[0]
